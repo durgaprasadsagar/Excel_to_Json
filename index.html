@@ -1,26 +1,33 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Converter</title>
+  <title>Excel → JSON Converter</title>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --bg:        #0f1117;
-      --surface:   #181c27;
-      --surface2:  #1f2437;
-      --border:    #2a3050;
+      --bg:        #f7f8fc;
+      --surface:   #defa78;
+      --surface2:  #8a94be;
+      --border:    #0a0009;
       --accent:    #4f8ef7;
       --accent2:   #38e8c6;
-      --text:      #e4e8f5;
-      --muted:     #7a85a3;
+      --text:      #000105;
+      --muted:     #a37a8d;
       --success:   #38e8a0;
       --warn:      #f7c94f;
-      --danger:    #f76f6f;
+      --danger:    #f70606;
       --radius:    10px;
       --mono:      'JetBrains Mono', 'Fira Mono', 'Cascadia Code', monospace;
     }
@@ -35,7 +42,6 @@
       flex-direction: column;
     }
 
-    /* ── Header ── */
     header {
       padding: 22px 36px 18px;
       border-bottom: 1px solid var(--border);
@@ -43,18 +49,31 @@
       align-items: center;
       gap: 14px;
     }
+
     .logo {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 18px;
       flex-shrink: 0;
     }
-    header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
-    header p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-    /* ── Main layout ── */
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
     main {
       flex: 1;
       display: grid;
@@ -63,7 +82,6 @@
       gap: 0;
     }
 
-    /* ── Left panel ── */
     .left-panel {
       border-right: 1px solid var(--border);
       padding: 28px 24px;
@@ -82,7 +100,6 @@
       margin-bottom: 10px;
     }
 
-    /* Drop zone */
     .dropzone {
       border: 2px dashed var(--border);
       border-radius: var(--radius);
@@ -92,19 +109,43 @@
       transition: border-color 0.2s, background 0.2s;
       position: relative;
     }
-    .dropzone:hover, .dropzone.drag-over {
+
+    .dropzone:hover,
+    .dropzone.drag-over {
       border-color: var(--accent);
       background: rgba(79,142,247,0.06);
     }
-    .dropzone input[type="file"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer;
-    }
-    .dropzone .icon { font-size: 32px; margin-bottom: 10px; }
-    .dropzone .dz-title { font-size: 13px; font-weight: 500; color: var(--text); }
-    .dropzone .dz-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-    /* File list */
-    .file-list { display: flex; flex-direction: column; gap: 8px; }
+    .dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .dropzone .icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .dropzone .dz-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .dropzone .dz-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .file-item {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -116,16 +157,55 @@
       cursor: pointer;
       transition: border-color 0.15s;
     }
-    .file-item:hover { border-color: var(--accent); }
-    .file-item.active { border-color: var(--accent); background: rgba(79,142,247,0.08); }
-    .file-item .fi-icon { font-size: 20px; flex-shrink: 0; }
-    .file-item .fi-name { flex: 1; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .file-item .fi-size { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-    .file-item .fi-remove { color: var(--muted); cursor: pointer; font-size: 16px; padding: 2px 4px; border-radius: 4px; }
-    .file-item .fi-remove:hover { color: var(--danger); background: rgba(247,111,111,0.1); }
 
-    /* Sheet selector */
-    .sheet-selector { display: flex; flex-direction: column; gap: 6px; }
+    .file-item:hover {
+      border-color: var(--accent);
+    }
+
+    .file-item.active {
+      border-color: var(--accent);
+      background: rgba(79,142,247,0.08);
+    }
+
+    .file-item .fi-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .file-item .fi-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-item .fi-size {
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .file-item .fi-remove {
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .file-item .fi-remove:hover {
+      color: var(--danger);
+      background: rgba(247,111,111,0.1);
+    }
+
+    .sheet-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
     .sheet-btn {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -137,36 +217,80 @@
       text-align: left;
       transition: border-color 0.15s, background 0.15s;
     }
-    .sheet-btn:hover { border-color: var(--accent); }
-    .sheet-btn.active { border-color: var(--accent2); background: rgba(56,232,198,0.07); color: var(--accent2); font-weight: 600; }
 
-    /* Options */
-    .options { display: flex; flex-direction: column; gap: 10px; }
-    .opt-row { display: flex; align-items: center; gap: 10px; }
-    .opt-row label { font-size: 13px; color: var(--muted); flex: 1; }
-    .toggle {
-      position: relative; width: 38px; height: 22px; flex-shrink: 0;
+    .sheet-btn:hover {
+      border-color: var(--accent);
     }
-    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .sheet-btn.active {
+      border-color: var(--accent2);
+      background: rgba(56,232,198,0.07);
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .opt-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .opt-row label {
+      font-size: 13px;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .toggle {
+      position: relative;
+      width: 38px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
     .toggle-slider {
-      position: absolute; inset: 0;
+      position: absolute;
+      inset: 0;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 22px;
       cursor: pointer;
       transition: background 0.2s;
     }
+
     .toggle-slider::after {
       content: '';
       position: absolute;
-      left: 3px; top: 3px;
-      width: 14px; height: 14px;
+      left: 3px;
+      top: 3px;
+      width: 14px;
+      height: 14px;
       background: var(--muted);
       border-radius: 50%;
       transition: transform 0.2s, background 0.2s;
     }
-    .toggle input:checked + .toggle-slider { background: rgba(79,142,247,0.2); border-color: var(--accent); }
-    .toggle input:checked + .toggle-slider::after { transform: translateX(16px); background: var(--accent); }
+
+    .toggle input:checked + .toggle-slider {
+      background: rgba(79,142,247,0.2);
+      border-color: var(--accent);
+    }
+
+    .toggle input:checked + .toggle-slider::after {
+      transform: translateX(16px);
+      background: var(--accent);
+    }
 
     select.opt-select {
       background: var(--surface2);
@@ -177,9 +301,12 @@
       padding: 4px 8px;
       cursor: pointer;
     }
-    select.opt-select:focus { outline: none; border-color: var(--accent); }
 
-    /* Action buttons */
+    select.opt-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
     .btn {
       border: none;
       border-radius: 8px;
@@ -188,19 +315,55 @@
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.15s, transform 0.1s;
-      display: flex; align-items: center; justify-content: center; gap: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
     }
-    .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-    .btn-primary { background: linear-gradient(135deg, var(--accent), #3a70d4); color: #fff; width: 100%; }
-    .btn-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
-    .btn-success  { background: linear-gradient(135deg, var(--accent2), #28c8a0); color: #0f1117; width: 100%; }
 
-    .actions { display: flex; flex-direction: column; gap: 8px; }
-    .actions-row { display: flex; gap: 8px; }
-    .actions-row .btn { flex: 1; }
+    .btn:active {
+      transform: scale(0.97);
+    }
 
-    /* ── Right panel ── */
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #3a70d4);
+      color: #fff;
+      width: 100%;
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent2), #28c8a0);
+      color: #69d9f5c2;
+      width: 100%;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .actions-row .btn {
+      flex: 1;
+    }
+
     .right-panel {
       display: flex;
       flex-direction: column;
@@ -215,12 +378,14 @@
       gap: 12px;
       flex-shrink: 0;
     }
+
     .output-toolbar .file-label {
       font-size: 13px;
       font-weight: 600;
       color: var(--accent2);
       flex: 1;
     }
+
     .output-toolbar .row-count {
       font-size: 12px;
       color: var(--muted);
@@ -230,13 +395,13 @@
       padding: 3px 9px;
     }
 
-    /* Tabs */
     .tab-bar {
       display: flex;
       border-bottom: 1px solid var(--border);
       padding: 0 20px;
       flex-shrink: 0;
     }
+
     .tab {
       font-size: 13px;
       padding: 10px 16px;
@@ -246,8 +411,15 @@
       transition: color 0.15s, border-color 0.15s;
       user-select: none;
     }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .tab:hover:not(.active) { color: var(--text); }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--text);
+    }
 
     .output-area {
       flex: 1;
@@ -255,7 +427,6 @@
       padding: 0;
     }
 
-    /* JSON view */
     .json-view {
       padding: 20px;
       font-family: var(--mono);
@@ -265,22 +436,38 @@
       word-break: break-all;
       color: var(--text);
     }
-    .json-key    { color: #9ab8f7; }
-    .json-str    { color: #98e0a8; }
-    .json-num    { color: #f7c94f; }
-    .json-bool   { color: var(--accent2); }
-    .json-null   { color: var(--danger); }
 
-    /* Table view */
+    .json-key {
+      color: #9ab8f7;
+    }
+
+    .json-str {
+      color: #98e0a8;
+    }
+
+    .json-num {
+      color: #f7c94f;
+    }
+
+    .json-bool {
+      color: var(--accent2);
+    }
+
+    .json-null {
+      color: var(--danger);
+    }
+
     .table-wrap {
       overflow: auto;
       height: 100%;
     }
+
     table {
       border-collapse: collapse;
       min-width: 100%;
       font-size: 13px;
     }
+
     thead th {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -294,11 +481,18 @@
       top: 0;
       z-index: 1;
     }
-    tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-    tbody tr:hover { background: rgba(79,142,247,0.05); }
+
+    tbody tr:nth-child(even) {
+      background: rgba(255,255,255,0.02);
+    }
+
+    tbody tr:hover {
+      background: rgba(79,142,247,0.05);
+    }
+
     tbody td {
-      border-bottom: 1px solid rgba(42,48,80,0.6);
-      border-right: 1px solid rgba(42,48,80,0.4);
+      border-bottom: 1px solid rgba(60, 192, 233, 0.6);
+      border-right: 1px solid rgba(70, 227, 233, 0.527);
       padding: 8px 14px;
       white-space: nowrap;
       max-width: 280px;
@@ -306,9 +500,12 @@
       text-overflow: ellipsis;
       color: var(--text);
     }
-    tbody td.null-cell { color: var(--muted); font-style: italic; }
 
-    /* Empty / placeholder */
+    tbody td.null-cell {
+      color: var(--muted);
+      font-style: italic;
+    }
+
     .empty-state {
       flex: 1;
       display: flex;
@@ -319,65 +516,121 @@
       color: var(--muted);
       height: 100%;
     }
-    .empty-state .es-icon { font-size: 48px; }
-    .empty-state p { font-size: 14px; }
-    .empty-state small { font-size: 12px; }
 
-    /* Toast */
+    .empty-state .es-icon {
+      font-size: 48px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    .empty-state small {
+      font-size: 12px;
+    }
+
     .toast-container {
       position: fixed;
-      bottom: 24px; right: 24px;
-      display: flex; flex-direction: column; gap: 8px;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       z-index: 999;
     }
+
     .toast {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 11px 16px;
       font-size: 13px;
-      display: flex; align-items: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       animation: slideUp 0.25s ease;
       max-width: 320px;
     }
-    .toast.success { border-color: var(--success); }
-    .toast.error   { border-color: var(--danger); }
-    @keyframes slideUp {
-      from { transform: translateY(16px); opacity: 0; }
-      to   { transform: translateY(0);    opacity: 1; }
+
+    .toast.success {
+      border-color: var(--success);
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 7px; height: 7px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+    .toast.error {
+      border-color: var(--danger);
+    }
 
-    .hidden { display: none !important; }
+    @keyframes slideUp {
+      from {
+        transform: translateY(16px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
+
 <body>
 
 <header>
-  <div class="logo">⚡</div>
+  <div class="logo">₯</div>
   <div>
-    <h1>Excel → JSON Converter</h1>
+    <h1>Excel ✈ JSON Converter</h1>
     <p>SCM / Oracle Fusion data utility</p>
   </div>
 </header>
 
 <main>
+
   <!-- LEFT PANEL -->
   <div class="left-panel">
 
     <!-- Upload -->
     <div>
       <div class="section-label">Upload Files</div>
+
       <div class="dropzone" id="dropzone">
-        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.zip" multiple />
-        <div class="icon">📂</div>
-        <div class="dz-title">Drop Excel or ZIP files here</div>
-        <div class="dz-sub">.xlsx · .xls · .csv · .zip &nbsp;|&nbsp; Multiple files OK</div>
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xlsx,.xls,.csv,.zip"
+          multiple
+        />
+
+        <div class="icon">📂൹ </div>
+
+        <div class="dz-title">
+          Drop Excel or ZIP files here
+        </div>
+
+        <div class="dz-sub">
+          .xlsx · .xls · .csv · .zip &nbsp;|&nbsp; Multiple files OK
+        </div>
       </div>
     </div>
 
@@ -396,473 +649,1734 @@
     <!-- Options -->
     <div>
       <div class="section-label">Options</div>
+
       <div class="options">
+
         <div class="opt-row">
           <label>First row as headers</label>
-          <label class="toggle"><input type="checkbox" id="optHeaders" checked /><span class="toggle-slider"></span></label>
+
+          <label class="toggle">
+            <input
+              type="checkbox"
+              id="optHeaders"
+              checked
+            />
+            <span class="toggle-slider"></span>
+          </label>
         </div>
+
         <div class="opt-row">
           <label>Skip empty rows</label>
-          <label class="toggle"><input type="checkbox" id="optSkipEmpty" checked /><span class="toggle-slider"></span></label>
+
+          <label class="toggle">
+            <input
+              type="checkbox"
+              id="optSkipEmpty"
+              checked
+            />
+            <span class="toggle-slider"></span>
+          </label>
         </div>
+
+        <!-- Sheet name is intentionally disabled -->
         <div class="opt-row">
           <label>Include sheet name</label>
-          <label class="toggle"><input type="checkbox" id="optSheetName" /></label>
+
+          <label class="toggle">
+            <input
+              type="checkbox"
+              id="optSheetName"
+              disabled
+            />
+            <span class="toggle-slider"></span>
+          </label>
         </div>
+
         <div class="opt-row">
           <label>Pretty print</label>
-          <label class="toggle"><input type="checkbox" id="optPretty" checked /></label>
+
+          <label class="toggle">
+            <input
+              type="checkbox"
+              id="optPretty"
+              checked
+            />
+            <span class="toggle-slider"></span>
+          </label>
         </div>
+
         <div class="opt-row">
           <label>Indentation</label>
+
           <select class="opt-select" id="optIndent">
             <option value="2">2 spaces</option>
             <option value="4">4 spaces</option>
             <option value="tab">Tab</option>
           </select>
         </div>
+
       </div>
     </div>
 
     <!-- Actions -->
     <div class="actions">
-      <button class="btn btn-primary" id="btnConvert" disabled>⚙️ Convert to JSON</button>
+
+      <button
+        class="btn btn-primary"
+        id="btnConvert"
+        disabled
+      >
+        ⚙️ Convert to JSON
+      </button>
+
       <div class="actions-row">
-        <button class="btn btn-secondary" id="btnCopy" disabled>📋 Copy</button>
-        <button class="btn btn-secondary" id="btnDownload" disabled>⬇️ Download</button>
+
+        <button
+          class="btn btn-secondary"
+          id="btnCopy"
+          disabled
+        >
+          📋 Copy
+        </button>
+
+        <button
+          class="btn btn-secondary"
+          id="btnDownload"
+          disabled
+        >
+          ⬇️ Download
+        </button>
+
       </div>
-      <button class="btn btn-success hidden" id="btnDownloadAll">⬇️ Download All as ZIP</button>
+
+      <button
+        class="btn btn-success hidden"
+        id="btnDownloadAll"
+      >
+        ⬇️ Download All as ZIP
+      </button>
+
     </div>
 
-  </div><!-- /left-panel -->
+  </div>
 
   <!-- RIGHT PANEL -->
   <div class="right-panel">
+
     <div class="output-toolbar">
       <span class="file-label" id="outputLabel">—</span>
       <span class="row-count hidden" id="rowCount"></span>
     </div>
 
     <div class="tab-bar">
-      <div class="tab active" data-tab="json">JSON</div>
-      <div class="tab" data-tab="table">Table</div>
+
+      <div
+        class="tab active"
+        data-tab="json"
+      >
+        JSON
+      </div>
+
+      <div
+        class="tab"
+        data-tab="table"
+      >
+        Table
+      </div>
+
     </div>
 
     <div class="output-area" id="outputArea">
+
       <div class="empty-state">
+
         <div class="es-icon">🗂️</div>
+
         <p>No data yet</p>
-        <small>Upload an Excel or CSV file to get started</small>
+
+        <small>
+          Upload an Excel or CSV file to get started
+        </small>
+
       </div>
+
     </div>
+
   </div>
+
 </main>
 
-<div class="toast-container" id="toastContainer"></div>
+<div
+  class="toast-container"
+  id="toastContainer"
+></div>
+
 
 <script>
-  /* ──────────────────────────────────────────
+
+  /* ==========================================================
      State
-  ────────────────────────────────────────── */
+     ========================================================== */
+
   const state = {
-    files: [],          // { file, name, workbook }
+    files: [],
     activeFileIdx: -1,
     activeSheet: null,
-    jsonData: null,     // parsed array
-    jsonStr: '',        // stringified
+    jsonData: null,
+    jsonStr: '',
     activeTab: 'json',
-    allJsonResults: [], // for bulk download
+    allJsonResults: []
   };
 
-  /* ──────────────────────────────────────────
-     DOM refs
-  ────────────────────────────────────────── */
+
+  /* ==========================================================
+     DOM references
+     ========================================================== */
+
   const $ = id => document.getElementById(id);
-  const dropzone     = $('dropzone');
-  const fileInput    = $('fileInput');
-  const fileList     = $('fileList');
-  const fileSection  = $('fileSection');
-  const sheetList    = $('sheetList');
-  const sheetSection = $('sheetSection');
-  const btnConvert   = $('btnConvert');
-  const btnCopy      = $('btnCopy');
-  const btnDownload  = $('btnDownload');
+
+  const dropzone       = $('dropzone');
+  const fileInput      = $('fileInput');
+  const fileList       = $('fileList');
+  const fileSection    = $('fileSection');
+  const sheetList      = $('sheetList');
+  const sheetSection   = $('sheetSection');
+  const btnConvert     = $('btnConvert');
+  const btnCopy        = $('btnCopy');
+  const btnDownload    = $('btnDownload');
   const btnDownloadAll = $('btnDownloadAll');
-  const outputArea   = $('outputArea');
-  const outputLabel  = $('outputLabel');
-  const rowCount     = $('rowCount');
-  const tabBar       = document.querySelector('.tab-bar');
+  const outputArea     = $('outputArea');
+  const outputLabel    = $('outputLabel');
+  const rowCount       = $('rowCount');
+  const tabBar         = document.querySelector('.tab-bar');
 
-  /* ──────────────────────────────────────────
+
+  /* ==========================================================
      File handling
-  ────────────────────────────────────────── */
-  fileInput.addEventListener('change', e => handleFiles(e.target.files));
+     ========================================================== */
 
-  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
-  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
-  dropzone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropzone.classList.remove('drag-over');
-    handleFiles(e.dataTransfer.files);
+  fileInput.addEventListener('change', e => {
+    handleFiles(e.target.files);
   });
 
+
+  dropzone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropzone.classList.add('drag-over');
+  });
+
+
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('drag-over');
+  });
+
+
+  dropzone.addEventListener('drop', e => {
+
+    e.preventDefault();
+
+    dropzone.classList.remove('drag-over');
+
+    handleFiles(e.dataTransfer.files);
+
+  });
+
+
   async function handleFiles(fileArr) {
-    const validExts  = ['.xlsx', '.xls', '.csv'];
+
+    const validExts = [
+      '.xlsx',
+      '.xls',
+      '.csv'
+    ];
+
     let added = 0;
 
+
     for (const f of fileArr) {
-      const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
+
+      const ext =
+        f.name
+          .slice(f.name.lastIndexOf('.'))
+          .toLowerCase();
+
+
+      /* ------------------------------------------------------
+         ZIP
+         ------------------------------------------------------ */
 
       if (ext === '.zip') {
-        // ── Unzip and process each Excel/CSV inside ──
+
         try {
-          const zip      = await JSZip.loadAsync(await f.arrayBuffer());
-          const entries  = Object.values(zip.files).filter(e =>
-            !e.dir && validExts.includes(e.name.slice(e.name.lastIndexOf('.')).toLowerCase())
+
+          const zip = await JSZip.loadAsync(
+            await f.arrayBuffer()
           );
 
+
+          const entries =
+            Object.values(zip.files).filter(e =>
+              !e.dir &&
+              validExts.includes(
+                e.name
+                  .slice(e.name.lastIndexOf('.'))
+                  .toLowerCase()
+              )
+            );
+
+
           if (!entries.length) {
-            toast(`"${f.name}" — no Excel/CSV files found inside`, 'error');
+
+            toast(
+              `"${f.name}" — no Excel/CSV files found inside`,
+              'error'
+            );
+
             continue;
           }
 
+
           for (const entry of entries) {
-            const buf  = await entry.async('arraybuffer');
-            const wb   = XLSX.read(buf, { type: 'array', cellDates: true });
-            // Use only the filename part (strip folder paths inside zip)
-            const name = entry.name.split('/').pop();
-            // Carry the ZIP name as provenance
-            state.files.push({ file: f, name, workbook: wb, fromZip: f.name });
+
+            const buf =
+              await entry.async('arraybuffer');
+
+
+            /*
+             * IMPORTANT:
+             *
+             * cellDates is NOT enabled here.
+             *
+             * Keeping the original numeric cell allows
+             * SheetJS to retain the Excel formatted value
+             * in cell.w.
+             *
+             * We then use cell.w when converting dates.
+             */
+            const wb = XLSX.read(
+              buf,
+              {
+                type: 'array',
+                cellNF: true
+              }
+            );
+
+
+            const name =
+              entry.name.split('/').pop();
+
+
+            state.files.push({
+              file: f,
+              name: name,
+              workbook: wb,
+              fromZip: f.name
+            });
+
+
             added++;
           }
 
-          toast(`📦 Extracted ${entries.length} file${entries.length > 1 ? 's' : ''} from "${f.name}"`, 'success');
+
+          toast(
+            `📦 Extracted ${entries.length} file${entries.length > 1 ? 's' : ''} from "${f.name}"`,
+            'success'
+          );
+
         } catch (e) {
-          toast(`Failed to read ZIP "${f.name}"`, 'error');
+
+          console.error(e);
+
+          toast(
+            `Failed to read ZIP "${f.name}"`,
+            'error'
+          );
         }
 
+
+      /* ------------------------------------------------------
+         Excel / CSV
+         ------------------------------------------------------ */
+
       } else if (validExts.includes(ext)) {
-        const buf = await f.arrayBuffer();
-        const wb  = XLSX.read(buf, { type: 'array', cellDates: true });
-        state.files.push({ file: f, name: f.name, workbook: wb });
-        added++;
+
+        try {
+
+          const buf =
+            await f.arrayBuffer();
+
+
+          /*
+           * cellDates is deliberately NOT used.
+           *
+           * This preserves Excel's original cell value and
+           * formatted display value.
+           */
+          const wb = XLSX.read(
+            buf,
+            {
+              type: 'array',
+              cellNF: true
+            }
+          );
+
+
+          state.files.push({
+            file: f,
+            name: f.name,
+            workbook: wb
+          });
+
+
+          added++;
+
+        } catch (e) {
+
+          console.error(e);
+
+          toast(
+            `Failed to read "${f.name}"`,
+            'error'
+          );
+        }
+
 
       } else {
-        toast(`Skipped "${f.name}" — unsupported format`, 'error');
+
+        toast(
+          `Skipped "${f.name}" — unsupported format`,
+          'error'
+        );
       }
     }
 
+
     if (added > 0) {
+
       renderFileList();
-      selectFile(state.files.length - 1);
+
+      selectFile(
+        state.files.length - 1
+      );
     }
   }
 
+
   function renderFileList() {
+
     fileSection.classList.remove('hidden');
+
     fileList.innerHTML = '';
+
+
     state.files.forEach((f, i) => {
-      const el = document.createElement('div');
-      el.className = 'file-item' + (i === state.activeFileIdx ? ' active' : '');
-      const icon = f.name.endsWith('.csv') ? '📄' : '📊';
-      const badge = f.fromZip ? `<span style="font-size:10px;color:var(--warn);margin-left:2px;" title="From ${f.fromZip}">ZIP</span>` : '';
+
+      const el =
+        document.createElement('div');
+
+
+      el.className =
+        'file-item' +
+        (i === state.activeFileIdx
+          ? ' active'
+          : '');
+
+
+      const icon =
+        f.name.endsWith('.csv')
+          ? '📄'
+          : '📊';
+
+
+      const badge =
+        f.fromZip
+          ? `<span style="font-size:10px;color:var(--warn);margin-left:2px;" title="From ${esc(f.fromZip)}">ZIP</span>`
+          : '';
+
+
       el.innerHTML = `
         <span class="fi-icon">${icon}</span>
-        <span class="fi-name" title="${f.fromZip ? 'From ' + f.fromZip + ' → ' : ''}${f.name}">${f.name}${badge}</span>
-        <span class="fi-size">${fmtSize(f.file.size)}</span>
-        <span class="fi-remove" title="Remove">✕</span>
+
+        <span
+          class="fi-name"
+          title="${esc(f.fromZip ? 'From ' + f.fromZip + ' → ' : '')}${esc(f.name)}"
+        >
+          ${esc(f.name)}${badge}
+        </span>
+
+        <span class="fi-size">
+          ${fmtSize(f.file.size)}
+        </span>
+
+        <span
+          class="fi-remove"
+          title="Remove"
+        >
+          ✕
+        </span>
       `;
-      el.querySelector('.fi-remove').addEventListener('click', e => { e.stopPropagation(); removeFile(i); });
-      el.addEventListener('click', () => selectFile(i));
+
+
+      el.querySelector('.fi-remove')
+        .addEventListener('click', e => {
+
+          e.stopPropagation();
+
+          removeFile(i);
+        });
+
+
+      el.addEventListener(
+        'click',
+        () => selectFile(i)
+      );
+
+
       fileList.appendChild(el);
+
     });
   }
 
+
   function removeFile(i) {
+
     state.files.splice(i, 1);
+
+
     if (!state.files.length) {
+
       fileSection.classList.add('hidden');
       sheetSection.classList.add('hidden');
+
       btnConvert.disabled = true;
+
       state.activeFileIdx = -1;
+
       resetOutput();
+
     } else {
-      selectFile(Math.min(i, state.files.length - 1));
+
+      selectFile(
+        Math.min(
+          i,
+          state.files.length - 1
+        )
+      );
     }
+
+
     renderFileList();
   }
 
+
   function selectFile(i) {
+
     state.activeFileIdx = i;
+
     state.activeSheet = null;
+
     renderFileList();
-    const wb = state.files[i].workbook;
-    renderSheets(wb.SheetNames);
-    selectSheet(wb.SheetNames[0]);
+
+
+    const wb =
+      state.files[i].workbook;
+
+
+    renderSheets(
+      wb.SheetNames
+    );
+
+
+    selectSheet(
+      wb.SheetNames[0]
+    );
+
+
     btnConvert.disabled = false;
   }
 
-  /* ──────────────────────────────────────────
+
+  /* ==========================================================
      Sheet handling
-  ────────────────────────────────────────── */
+     ========================================================== */
+
   function renderSheets(names) {
+
     sheetSection.classList.remove('hidden');
+
     sheetList.innerHTML = '';
+
+
     names.forEach(name => {
-      const btn = document.createElement('button');
-      btn.className = 'sheet-btn' + (name === state.activeSheet ? ' active' : '');
-      btn.textContent = `📋 ${name}`;
-      btn.addEventListener('click', () => selectSheet(name));
+
+      const btn =
+        document.createElement('button');
+
+
+      btn.className =
+        'sheet-btn' +
+        (name === state.activeSheet
+          ? ' active'
+          : '');
+
+
+      btn.textContent =
+        `📋 ${name}`;
+
+
+      btn.addEventListener(
+        'click',
+        () => selectSheet(name)
+      );
+
+
       sheetList.appendChild(btn);
     });
   }
 
+
   function selectSheet(name) {
+
     state.activeSheet = name;
-    sheetList.querySelectorAll('.sheet-btn').forEach(b => {
-      b.classList.toggle('active', b.textContent.trim() === `📋 ${name}`);
-    });
+
+
+    sheetList
+      .querySelectorAll('.sheet-btn')
+      .forEach(b => {
+
+        b.classList.toggle(
+          'active',
+          b.textContent.trim() ===
+            `📋 ${name}`
+        );
+
+      });
   }
 
-  /* ──────────────────────────────────────────
+
+  /* ==========================================================
      Convert
-  ────────────────────────────────────────── */
-  btnConvert.addEventListener('click', convertActive);
+     ========================================================== */
+
+  btnConvert.addEventListener(
+    'click',
+    convertActive
+  );
+
 
   function convertActive() {
-    if (state.activeFileIdx < 0 || !state.activeSheet) return;
-    const wb   = state.files[state.activeFileIdx].workbook;
-    const data = convertSheet(wb, state.activeSheet);
-    state.jsonData = data;
-    state.jsonStr  = stringify(data);
-    renderOutput(state.jsonData, state.jsonStr, `${state.files[state.activeFileIdx].name} › ${state.activeSheet}`);
-    btnCopy.disabled     = false;
-    btnDownload.disabled = false;
-    toast('Converted successfully ✓', 'success');
 
-    // Build all-sheets-all-files result for bulk download
+    if (
+      state.activeFileIdx < 0 ||
+      !state.activeSheet
+    ) {
+      return;
+    }
+
+
+    const wb =
+      state.files[
+        state.activeFileIdx
+      ].workbook;
+
+
+    const data =
+      convertSheet(
+        wb,
+        state.activeSheet
+      );
+
+
+    state.jsonData = data;
+
+    state.jsonStr =
+      stringify(data);
+
+
+    /*
+     * Sheet name is used only for display.
+     *
+     * It is NOT added to the JSON records.
+     */
+    renderOutput(
+      state.jsonData,
+      state.jsonStr,
+      `${state.files[state.activeFileIdx].name} › ${state.activeSheet}`
+    );
+
+
+    btnCopy.disabled = false;
+
+    btnDownload.disabled = false;
+
+
+    toast(
+      'Converted successfully ✓',
+      'success'
+    );
+
+
     buildAllResults();
   }
 
-  function convertSheet(wb, sheetName) {
-    const ws = wb.Sheets[sheetName];
-    let rows = $('optHeaders').checked ? sheetToObjects(ws) : sheetToRawArray(ws);
-    if ($('optSkipEmpty').checked) rows = rows.filter(r => Object.values(r).some(v => v !== null && v !== ''));
-    if ($('optSheetName').checked) rows = rows.map(r => ({ _sheet: sheetName, ...r }));
+
+  function convertSheet(
+    wb,
+    sheetName
+  ) {
+
+    const ws =
+      wb.Sheets[sheetName];
+
+
+    let rows =
+      $('optHeaders').checked
+        ? sheetToObjects(ws)
+        : sheetToRawArray(ws);
+
+
+    if ($('optSkipEmpty').checked) {
+
+      rows =
+        rows.filter(r =>
+          Object.values(r).some(
+            v =>
+              v !== null &&
+              v !== ''
+          )
+        );
+    }
+
+
+    /*
+     * IMPORTANT:
+     *
+     * The sheet name is NEVER added to the
+     * JSON object.
+     *
+     * The old:
+     *
+     * rows = rows.map(r => ({
+     *   _sheet: sheetName,
+     *   ...r
+     * }));
+     *
+     * logic has been removed.
+     */
+
+
     return rows;
   }
 
-  /**
-   * Convert a cell value to its natural JS type:
-   *   - Excel numeric cells  → number  (integer if whole, float otherwise)
-   *   - Excel boolean cells  → boolean
-   *   - Excel date cells     → "YYYY-MM-DD" string  (dates are stored as numbers in xlsx)
-   *   - Everything else      → string  (trimmed)
-   *   - Empty / missing      → null
-   */
-  function coerceCell(cell) {
-    if (!cell || cell.v === undefined || cell.v === null || cell.v === '') return null;
 
-    // Date cell (type 'd') or numeric cell whose format string looks like a date
-    if (cell.t === 'd' || (cell.t === 'n' && cell.w && /^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$|^\d{4}-\d{2}-\d{2}/.test(cell.w))) {
-      // Use the formatted string for dates so "2024-03-15" comes through cleanly
-      return cell.w ? cell.w.trim() : String(cell.v);
-    }
+  /* ==========================================================
+     Excel Cell Conversion
+     ==========================================================
 
-    // Numeric cell → number (preserve int vs float)
-    if (cell.t === 'n') {
-      const n = Number(cell.v);
-      return Number.isFinite(n) ? n : null;
-    }
+     DATE HANDLING
+     ----------------------------------------------------------
 
-    // Boolean cell
-    if (cell.t === 'b') return Boolean(cell.v);
+     The most important requirement is:
 
-    // String / formula-result / error → string
-    const s = (cell.w !== undefined ? cell.w : String(cell.v)).trim();
-    return s === '' ? null : s;
+       Excel date:
+           06/10/2026
+
+       JSON:
+           "06/10/2026"
+
+     NOT:
+
+           "2026-10-06"
+
+     NOT:
+
+           "2026-10-06T00:00:00.000Z"
+
+     NOT:
+
+           46300
+
+     The value displayed by Excel is obtained from:
+
+           cell.w
+
+     Therefore the date's displayed format is preserved.
+
+     Examples:
+
+       Excel display     JSON
+       ----------------  ----------------
+       06/10/2026        "06/10/2026"
+       10/06/2026        "10/06/2026"
+       2026-10-06        "2026-10-06"
+       06-Oct-2026       "06-Oct-2026"
+       06.10.2026        "06.10.2026"
+       6-Oct-26          "6-Oct-26"
+
+     The converter does not force a new date format.
+     ========================================================== */
+  function isDateCell(cell) {
+
+  if (!cell) {
+    return false;
   }
+
+  // SheetJS date type
+  if (cell.t === 'd') {
+    return true;
+  }
+
+  // Excel numeric date with date/time number format
+  if (cell.t === 'n' && cell.z) {
+
+    const format = String(cell.z).toLowerCase();
+
+    // Excel date/time formats commonly contain
+    // d, m, y, h, s tokens.
+    return /[dmy]/.test(format);
+  }
+
+  // Fallback: detect a formatted date string
+  if (cell.t === 'n' && cell.w) {
+
+    const formatted = String(cell.w).trim();
+
+    return (
+      /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}(?:[ T]\d{1,2}:\d{2}(?::\d{2})?)?$/.test(formatted)
+      ||
+      /^\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}(?:[ T]\d{1,2}:\d{2}(?::\d{2})?)?$/.test(formatted)
+      ||
+      /^\d{1,2}-[A-Za-z]{3}-\d{2,4}(?:[ T]\d{1,2}:\d{2}(?::\d{2})?)?$/.test(formatted)
+    );
+  }
+
+  return false;
+}
+
+
+function formatExcelDate(cell) {
+
+  /*
+   * Use Excel's displayed value exactly as the
+   * starting point.
+   */
+  let value =
+    cell.w !== undefined &&
+    cell.w !== null
+      ? String(cell.w).trim()
+      : String(cell.v).trim();
+
+
+  /*
+   * Excel may display dates using a space between
+   * date and time:
+   *
+   * 06/10/2026 14:30:00
+   *
+   * JSON requirement:
+   *
+   * 06/10/2026T14:30:00
+   */
+  value = value.replace(
+    /^(.+?)\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?)$/i,
+    '$1T$2'
+  );
+
+
+  /*
+   * If there is no time component, append:
+   *
+   * T00:00:00
+   */
+  const hasTime =
+    /T\d{1,2}:\d{2}(?::\d{2})?/i.test(value);
+
+
+  if (!hasTime) {
+    value += 'T00:00:00';
+  }
+
+
+  return value;
+}
+
+
+function coerceCell(cell) {
+
+  // Empty / missing cell
+  if (
+    !cell ||
+    cell.v === undefined ||
+    cell.v === null ||
+    cell.v === ''
+  ) {
+    return null;
+  }
+
+
+  // Date cell
+  if (isDateCell(cell)) {
+    return formatExcelDate(cell);
+  }
+
+
+  // Numeric cell
+  if (cell.t === 'n') {
+
+    const n = Number(cell.v);
+
+    return Number.isFinite(n)
+      ? n
+      : null;
+  }
+
+
+  // Boolean cell
+  if (cell.t === 'b') {
+    return Boolean(cell.v);
+  }
+
+
+  // String / formula / error
+  const s =
+    (
+      cell.w !== undefined
+        ? cell.w
+        : String(cell.v)
+    ).trim();
+
+
+  return s === ''
+    ? null
+    : s;
+}
+
+  
+
+
+  function coerceCell(cell) {
+
+    /*
+     * Empty / missing cell
+     */
+    if (
+      !cell ||
+      cell.v === undefined ||
+      cell.v === null ||
+      cell.v === ''
+    ) {
+      return null;
+    }
+
+
+    /* --------------------------------------------------------
+       DATE
+       --------------------------------------------------------
+
+       ALWAYS use Excel's displayed text.
+
+       cell.w is the value formatted according
+       to the Excel cell's number format.
+       -------------------------------------------------------- */
+
+    if (isDateCell(cell)) {
+
+      if (
+        cell.w !== undefined &&
+        cell.w !== null &&
+        String(cell.w).trim() !== ''
+      ) {
+
+        return String(cell.w).trim();
+      }
+
+
+      /*
+       * Fallback only if cell.w is unavailable.
+       *
+       * This should rarely be needed because the workbook
+       * is read with cellNF enabled.
+       */
+      return String(cell.v);
+    }
+
+
+    /* --------------------------------------------------------
+       NUMERIC
+       -------------------------------------------------------- */
+
+    if (cell.t === 'n') {
+
+      const n =
+        Number(cell.v);
+
+
+      return Number.isFinite(n)
+        ? n
+        : null;
+    }
+
+
+    /* --------------------------------------------------------
+       BOOLEAN
+       -------------------------------------------------------- */
+
+    if (cell.t === 'b') {
+
+      return Boolean(cell.v);
+    }
+
+
+    /* --------------------------------------------------------
+       STRING / FORMULA / ERROR
+       -------------------------------------------------------- */
+
+    const s =
+      (
+        cell.w !== undefined
+          ? cell.w
+          : String(cell.v)
+      ).trim();
+
+
+    return s === ''
+      ? null
+      : s;
+  }
+
+
+  /* ==========================================================
+     Sheet → Objects
+     ========================================================== */
 
   function sheetToObjects(ws) {
-    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-    const rows  = [];
 
-    // Read header row (row 0)
+    const range =
+      XLSX.utils.decode_range(
+        ws['!ref'] || 'A1'
+      );
+
+
+    const rows = [];
+
+
+    /*
+     * Header row
+     */
+
     const headers = [];
-    for (let c = range.s.c; c <= range.e.c; c++) {
-      const cell = ws[XLSX.utils.encode_cell({ r: range.s.r, c })];
-      headers[c] = cell ? String(cell.v).trim() : `col_${c}`;
+
+
+    for (
+      let c = range.s.c;
+      c <= range.e.c;
+      c++
+    ) {
+
+      const cell =
+        ws[
+          XLSX.utils.encode_cell({
+            r: range.s.r,
+            c: c
+          })
+        ];
+
+
+      headers[c] =
+        cell
+          ? String(cell.v).trim()
+          : `col_${c}`;
     }
 
-    // Read data rows
-    for (let r = range.s.r + 1; r <= range.e.r; r++) {
+
+    /*
+     * Data rows
+     */
+
+    for (
+      let r = range.s.r + 1;
+      r <= range.e.r;
+      r++
+    ) {
+
       const row = {};
-      for (let c = range.s.c; c <= range.e.c; c++) {
-        const cell = ws[XLSX.utils.encode_cell({ r, c })];
-        row[headers[c]] = coerceCell(cell);
+
+
+      for (
+        let c = range.s.c;
+        c <= range.e.c;
+        c++
+      ) {
+
+        const cell =
+          ws[
+            XLSX.utils.encode_cell({
+              r: r,
+              c: c
+            })
+          ];
+
+
+        row[headers[c]] =
+          coerceCell(cell);
       }
+
+
       rows.push(row);
     }
+
+
     return rows;
   }
+
+
+  /* ==========================================================
+     Sheet → Raw Array
+     ========================================================== */
 
   function sheetToRawArray(ws) {
-    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-    const rows  = [];
-    for (let r = range.s.r; r <= range.e.r; r++) {
+
+    const range =
+      XLSX.utils.decode_range(
+        ws['!ref'] || 'A1'
+      );
+
+
+    const rows = [];
+
+
+    for (
+      let r = range.s.r;
+      r <= range.e.r;
+      r++
+    ) {
+
       const row = {};
-      for (let c = range.s.c; c <= range.e.c; c++) {
-        const cell = ws[XLSX.utils.encode_cell({ r, c })];
-        row[`col_${c - range.s.c}`] = coerceCell(cell);
+
+
+      for (
+        let c = range.s.c;
+        c <= range.e.c;
+        c++
+      ) {
+
+        const cell =
+          ws[
+            XLSX.utils.encode_cell({
+              r: r,
+              c: c
+            })
+          ];
+
+
+        row[
+          `col_${c - range.s.c}`
+        ] =
+          coerceCell(cell);
       }
+
+
       rows.push(row);
     }
+
+
     return rows;
   }
 
+
+  /* ==========================================================
+     JSON stringify
+     ========================================================== */
+
   function stringify(data) {
-    const pretty  = $('optPretty').checked;
-    const indentV = $('optIndent').value;
-    const indent  = pretty ? (indentV === 'tab' ? '\t' : parseInt(indentV)) : 0;
-    return JSON.stringify(data, null, pretty ? indent : undefined);
+
+    const pretty =
+      $('optPretty').checked;
+
+
+    const indentV =
+      $('optIndent').value;
+
+
+    const indent =
+      pretty
+        ? (
+            indentV === 'tab'
+              ? '\t'
+              : parseInt(indentV, 10)
+          )
+        : 0;
+
+
+    return JSON.stringify(
+      data,
+      null,
+      pretty ? indent : undefined
+    );
   }
+
+
+  /* ==========================================================
+     Build all results
+     ========================================================== */
 
   function buildAllResults() {
-    state.allJsonResults = state.files.map(f => {
-      const sheets = f.workbook.SheetNames.map(s => ({
-        sheet: s,
-        data: convertSheet(f.workbook, s),
-      }));
-      return { file: f.name, sheets };
-    });
-    if (state.files.length > 1) btnDownloadAll.classList.remove('hidden');
-  }
 
-  /* ──────────────────────────────────────────
-     Render output
-  ────────────────────────────────────────── */
-  function renderOutput(data, jsonStr, label) {
-    outputLabel.textContent = label;
-    rowCount.textContent    = `${data.length} row${data.length !== 1 ? 's' : ''}`;
-    rowCount.classList.remove('hidden');
-    renderTab(state.activeTab, data, jsonStr);
-  }
+    state.allJsonResults =
+      state.files.map(f => {
 
-  function renderTab(tab, data, jsonStr) {
-    data    = data    || state.jsonData;
-    jsonStr = jsonStr || state.jsonStr;
-    if (!data) return;
+        const sheets =
+          f.workbook.SheetNames.map(
+            s => ({
 
-    if (tab === 'json') {
-      outputArea.innerHTML = `<div class="json-view">${syntaxHighlight(jsonStr)}</div>`;
-    } else {
-      outputArea.innerHTML = renderTable(data);
+              /*
+               * Sheet name is metadata used by
+               * the application only.
+               *
+               * It is NOT inserted into JSON.
+               */
+              sheet: s,
+
+              data:
+                convertSheet(
+                  f.workbook,
+                  s
+                )
+
+            })
+          );
+
+
+        return {
+          file: f.name,
+          sheets: sheets
+        };
+      });
+
+
+    if (state.files.length > 1) {
+
+      btnDownloadAll
+        .classList
+        .remove('hidden');
     }
   }
 
-  tabBar.addEventListener('click', e => {
-    const tab = e.target.dataset.tab;
-    if (!tab) return;
-    state.activeTab = tab;
-    tabBar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    renderTab(tab);
-  });
+
+  /* ==========================================================
+     Render output
+     ========================================================== */
+
+  function renderOutput(
+    data,
+    jsonStr,
+    label
+  ) {
+
+    outputLabel.textContent =
+      label;
+
+
+    rowCount.textContent =
+      `${data.length} row${data.length !== 1 ? 's' : ''}`;
+
+
+    rowCount.classList.remove(
+      'hidden'
+    );
+
+
+    renderTab(
+      state.activeTab,
+      data,
+      jsonStr
+    );
+  }
+
+
+  function renderTab(
+    tab,
+    data,
+    jsonStr
+  ) {
+
+    data =
+      data || state.jsonData;
+
+
+    jsonStr =
+      jsonStr || state.jsonStr;
+
+
+    if (!data) {
+      return;
+    }
+
+
+    if (tab === 'json') {
+
+      outputArea.innerHTML =
+        `<div class="json-view">${syntaxHighlight(jsonStr)}</div>`;
+
+    } else {
+
+      outputArea.innerHTML =
+        renderTable(data);
+    }
+  }
+
+
+  /* ==========================================================
+     Tabs
+     ========================================================== */
+
+  tabBar.addEventListener(
+    'click',
+    e => {
+
+      const tab =
+        e.target.dataset.tab;
+
+
+      if (!tab) {
+        return;
+      }
+
+
+      state.activeTab =
+        tab;
+
+
+      tabBar
+        .querySelectorAll('.tab')
+        .forEach(t =>
+          t.classList.toggle(
+            'active',
+            t.dataset.tab === tab
+          )
+        );
+
+
+      renderTab(tab);
+    }
+  );
+
+
+  /* ==========================================================
+     Table
+     ========================================================== */
 
   function renderTable(data) {
-    if (!data || !data.length) return '<div class="empty-state"><div class="es-icon">🔍</div><p>No rows found</p></div>';
-    const keys = Object.keys(data[0]);
-    const thead = `<thead><tr>${keys.map(k => `<th>${esc(k)}</th>`).join('')}</tr></thead>`;
-    const tbody = `<tbody>${data.map(row =>
-      `<tr>${keys.map(k => {
-        const v = row[k];
-        return v === null || v === undefined
-          ? `<td class="null-cell">null</td>`
-          : `<td>${esc(String(v))}</td>`;
-      }).join('')}</tr>`
-    ).join('')}</tbody>`;
-    return `<div class="table-wrap"><table>${thead}${tbody}</table></div>`;
+
+    if (
+      !data ||
+      !data.length
+    ) {
+
+      return `
+        <div class="empty-state">
+          <div class="es-icon">🔍</div>
+          <p>No rows found</p>
+        </div>
+      `;
+    }
+
+
+    const keys =
+      Object.keys(data[0]);
+
+
+    const thead =
+      `<thead>
+        <tr>
+          ${keys
+            .map(k =>
+              `<th>${esc(k)}</th>`
+            )
+            .join('')}
+        </tr>
+      </thead>`;
+
+
+    const tbody =
+      `<tbody>
+        ${
+          data.map(row =>
+            `<tr>
+              ${
+                keys.map(k => {
+
+                  const v =
+                    row[k];
+
+
+                  return (
+                    v === null ||
+                    v === undefined
+                  )
+                    ? `<td class="null-cell">null</td>`
+                    : `<td>${esc(String(v))}</td>`;
+
+                }).join('')
+              }
+            </tr>`
+          ).join('')
+        }
+      </tbody>`;
+
+
+    return `
+      <div class="table-wrap">
+        <table>
+          ${thead}
+          ${tbody}
+        </table>
+      </div>
+    `;
   }
+
+
+  /* ==========================================================
+     JSON syntax highlighting
+     ========================================================== */
 
   function syntaxHighlight(json) {
+
     return json
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
-        let cls = 'json-num';
-        if (/^"/.test(match)) cls = /:$/.test(match) ? 'json-key' : 'json-str';
-        else if (/true|false/.test(match)) cls = 'json-bool';
-        else if (/null/.test(match)) cls = 'json-null';
-        return `<span class="${cls}">${match}</span>`;
-      });
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      )
+      .replace(
+        /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        match => {
+
+          let cls =
+            'json-num';
+
+
+          if (/^"/.test(match)) {
+
+            cls =
+              /:$/.test(match)
+                ? 'json-key'
+                : 'json-str';
+
+          } else if (
+            /true|false/.test(match)
+          ) {
+
+            cls =
+              'json-bool';
+
+          } else if (
+            /null/.test(match)
+          ) {
+
+            cls =
+              'json-null';
+          }
+
+
+          return `
+            <span class="${cls}">
+              ${match}
+            </span>
+          `;
+        }
+      );
   }
+
+
+  /* ==========================================================
+     Reset
+     ========================================================== */
 
   function resetOutput() {
-    outputArea.innerHTML = `<div class="empty-state"><div class="es-icon">🗂️</div><p>No data yet</p><small>Upload an Excel or CSV file to get started</small></div>`;
+
+    outputArea.innerHTML = `
+      <div class="empty-state">
+        <div class="es-icon">🗂️</div>
+        <p>No data yet</p>
+        <small>
+          Upload an Excel or CSV file to get started
+        </small>
+      </div>
+    `;
+
+
     outputLabel.textContent = '—';
+
     rowCount.classList.add('hidden');
+
     btnCopy.disabled = true;
+
     btnDownload.disabled = true;
+
     btnDownloadAll.classList.add('hidden');
+
     state.jsonData = null;
-    state.jsonStr  = '';
+
+    state.jsonStr = '';
   }
 
-  /* ──────────────────────────────────────────
-     Copy / Download
-  ────────────────────────────────────────── */
-  btnCopy.addEventListener('click', () => {
-    if (!state.jsonStr) return;
-    navigator.clipboard.writeText(state.jsonStr).then(() => toast('Copied to clipboard ✓', 'success'));
-  });
 
-  btnDownload.addEventListener('click', () => {
-    if (!state.jsonStr) return;
-    const fname = (state.files[state.activeFileIdx]?.name || 'output').replace(/\.[^.]+$/, '') + `_${state.activeSheet}.json`;
-    downloadText(state.jsonStr, fname, 'application/json');
-  });
+  /* ==========================================================
+     Copy
+     ========================================================== */
 
-  btnDownloadAll.addEventListener('click', () => {
-    state.allJsonResults.forEach(r => {
-      r.sheets.forEach(s => {
-        const fname = r.file.replace(/\.[^.]+$/, '') + `_${s.sheet}.json`;
-        downloadText(stringify(s.data), fname, 'application/json');
-      });
-    });
-    toast(`Downloaded ${state.allJsonResults.reduce((a,r) => a + r.sheets.length, 0)} JSON files`, 'success');
-  });
+  btnCopy.addEventListener(
+    'click',
+    () => {
 
-  function downloadText(text, filename, mime) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([text], { type: mime }));
-    a.download = filename;
+      if (!state.jsonStr) {
+        return;
+      }
+
+
+      navigator.clipboard
+        .writeText(state.jsonStr)
+        .then(() =>
+          toast(
+            'Copied to clipboard ✓',
+            'success'
+          )
+        );
+    }
+  );
+
+
+  /* ==========================================================
+     Download active JSON
+     ========================================================== */
+
+  btnDownload.addEventListener(
+    'click',
+    () => {
+
+      if (!state.jsonStr) {
+        return;
+      }
+
+
+      const fname =
+        (
+          state.files[
+            state.activeFileIdx
+          ]?.name ||
+          'output'
+        )
+        .replace(
+          /\.[^.]+$/,
+          ''
+        )
+        +
+        `_${state.activeSheet}.json`;
+
+
+      downloadText(
+        state.jsonStr,
+        fname,
+        'application/json'
+      );
+    }
+  );
+
+
+  /* ==========================================================
+     Download all
+     ========================================================== */
+
+  btnDownloadAll.addEventListener(
+    'click',
+    () => {
+
+      state.allJsonResults.forEach(
+        r => {
+
+          r.sheets.forEach(
+            s => {
+
+              /*
+               * Sheet name is used only in the
+               * filename, NOT inside the JSON.
+               */
+              const fname =
+                r.file.replace(
+                  /\.[^.]+$/,
+                  ''
+                )
+                +
+                `_${s.sheet}.json`;
+
+
+              downloadText(
+                stringify(s.data),
+                fname,
+                'application/json'
+              );
+            }
+          );
+        }
+      );
+
+
+      toast(
+        `Downloaded ${state.allJsonResults.reduce(
+          (a, r) => a + r.sheets.length,
+          0
+        )} JSON files`,
+        'success'
+      );
+    }
+  );
+
+
+  /* ==========================================================
+     Download helper
+     ========================================================== */
+
+  function downloadText(
+    text,
+    filename,
+    mime
+  ) {
+
+    const a =
+      document.createElement('a');
+
+
+    a.href =
+      URL.createObjectURL(
+        new Blob(
+          [text],
+          { type: mime }
+        )
+      );
+
+
+    a.download =
+      filename;
+
+
     a.click();
-    URL.revokeObjectURL(a.href);
+
+
+    URL.revokeObjectURL(
+      a.href
+    );
   }
 
-  /* ──────────────────────────────────────────
+
+  /* ==========================================================
      Helpers
-  ────────────────────────────────────────── */
+     ========================================================== */
+
   function fmtSize(b) {
-    if (b < 1024) return b + ' B';
-    if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
-    return (b/1024/1024).toFixed(1) + ' MB';
+
+    if (b < 1024) {
+      return b + ' B';
+    }
+
+
+    if (b < 1024 * 1024) {
+
+      return (
+        b / 1024
+      ).toFixed(1) + ' KB';
+    }
+
+
+    return (
+      b / (1024 * 1024)
+    ).toFixed(1) + ' MB';
   }
+
 
   function esc(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    return String(s)
+      .replace(
+        /&/g,
+        '&amp;'
+      )
+      .replace(
+        /</g,
+        '&lt;'
+      )
+      .replace(
+        />/g,
+        '&gt;'
+      );
   }
 
-  function toast(msg, type = 'info') {
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.textContent = msg;
-    $('toastContainer').appendChild(el);
-    setTimeout(() => el.remove(), 3000);
+
+  function toast(
+    msg,
+    type = 'info'
+  ) {
+
+    const el =
+      document.createElement('div');
+
+
+    el.className =
+      `toast ${type}`;
+
+
+    el.textContent =
+      msg;
+
+
+    $('toastContainer')
+      .appendChild(el);
+
+
+    setTimeout(
+      () => el.remove(),
+      3000
+    );
   }
 
-  /* Live re-convert when options change */
-  ['optHeaders','optSkipEmpty','optSheetName','optPretty','optIndent'].forEach(id => {
-    $(id).addEventListener('change', () => { if (state.jsonData) convertActive(); });
+
+  /* ==========================================================
+     Live re-convert when options change
+     ========================================================== */
+
+  [
+    'optHeaders',
+    'optSkipEmpty',
+    'optPretty',
+    'optIndent'
+  ].forEach(id => {
+
+    $(id).addEventListener(
+      'change',
+      () => {
+
+        if (state.jsonData) {
+          convertActive();
+        }
+
+      }
+    );
   });
+
+
+  /*
+   * Sheet-name option intentionally excluded because
+   * sheet names are NEVER included in JSON.
+   */
+
 </script>
+
 </body>
 </html>
